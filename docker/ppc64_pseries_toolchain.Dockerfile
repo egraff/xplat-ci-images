@@ -9,7 +9,8 @@ COPY buildroot-tree/ /root/buildroot-tree/
 
 RUN \
   apt-get update && \
-  apt-get install -y libc6-dev-i386 build-essential g++
+  apt-get install -y libc6-dev-i386 build-essential g++ && \
+  apt-get install -y cpio unzip rsync bc openssh-client
 
 RUN \
   cd /root/buildroot-2020.02.7 && \
