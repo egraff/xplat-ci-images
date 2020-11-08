@@ -1,4 +1,4 @@
-name: Buildroot toolchain for ppc64_pseries arch
+name: Buildroot for ppc64_pseries arch
 
 
 on:
@@ -7,25 +7,80 @@ on:
 
 jobs:
   ppc64_pseries_toolchain:
+    name: Buildroot toolchain
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Login to GitHub Package Registry
+        shell: bash
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Pull images from GitHub Package Registry
+        run: |
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+
       - name: Build buildroot base image
-        run: docker build -t buildroot --file docker/buildroot.Dockerfile .
+        run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
 
       - name: Build buildroot toolchain image
-        run: docker build -t ppc64_pseries_toolchain --file docker/ppc64_pseries_toolchain.Dockerfile .
+        run: docker build . --tag ppc64_pseries_toolchain --file docker/ppc64_pseries_toolchain.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
 
       - name: Create tar archive containing toolchain
         run: |
-          rm -rf .output
-          mkdir .output
-          docker run --rm -v ${PWD}/.output:/output -w/output ppc64_pseries_toolchain tar -cvzf toolchain_powerpc64_pseries.tar.gz -C /root/toolchain/ppc64_pseries/ .
+          rm -rf .dockersrv
+          mkdir -p .dockersrv/output
+          docker run --rm -v ${PWD}/.dockersrv:/srv -w/srv/output ppc64_pseries_toolchain tar -cvzf toolchain_ppc64_pseries.tar.gz -C /root/toolchain/ppc64_pseries/ .
 
-      - name: Upload artifact
+      - name: Upload toolchain tar archive as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: toolchain_powerpc64_pseries.tar.gz
-          path: .output/toolchain_powerpc64_pseries.tar.gz
+          name: toolchain_ppc64_pseries.tar.gz
+          path: .docker/output/toolchain_ppc64_pseries.tar.gz
+
+      - name: Push to GitHub Packages
+        shell: bash
+        run: |
+          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
+          docker tag ppc64_pseries_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
+
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: egraff/xplat-ci-images/my-image
+          tag_with_ref: true
+
+  ppc64_pseries_qemu_images:
+    name: Buildroot images
+    needs: ppc64_pseries_toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Package Registry
+        shell: bash
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Pull images from GitHub Package Registry
+        run: |
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+
+      - name: Download toolchain tar archive
+        uses: actions/download-artifact@v2
+        with:
+          name: toolchain_ppc64_pseries.tar.gz
+
+      - name: Extract toolchain tar
+        run: |
+          rm -rf .dockersrv
+          mkdir -p .dockersrv/toolchain/ppc64_pseries
+          tar -xvzf toolchain_ppc64_pseries.tar.gz -C .dockersrv/toolchain/ppc64_pseries/
