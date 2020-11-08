@@ -3,7 +3,7 @@ WORKDIR /root/
 
 RUN \
   apt-get update && \
-  apt-get install -y wget software-properties-common
+  apt-get install -y coreutils wget software-properties-common
 
 
 FROM base AS download_and_untar
