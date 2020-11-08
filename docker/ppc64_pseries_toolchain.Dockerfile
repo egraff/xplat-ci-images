@@ -1,8 +1,4 @@
-FROM buildroot AS base
-WORKDIR /root/
-
-
-FROM base as build
+FROM buildroot AS build
 WORKDIR /root/
 
 COPY buildroot-tree/ /root/buildroot-tree/
@@ -18,6 +14,6 @@ RUN \
   FORCE_UNSAFE_CONFIGURE=1 make toolchain
 
 
-FROM base
+FROM buildroot
 WORKDIR /root/
 COPY --from=build /root/buildroot-2020.02.7/output/host/ /root/toolchain/ppc64_pseries/
