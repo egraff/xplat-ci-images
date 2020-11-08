@@ -18,9 +18,10 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
       - name: Pull images from GitHub Package Registry
+        shell: bash
         run: |
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest || (exit 0)
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest || (exit 0)
 
       - name: Build buildroot base image
         run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
