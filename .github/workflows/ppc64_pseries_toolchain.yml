@@ -21,10 +21,14 @@ jobs:
         shell: bash
         run: |
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest || true
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest || true
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest || true
 
       - name: Build buildroot base image
         run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+
+      - name: Build buildroot toolchain build image
+        run: docker build . --tag ppc64_pseries_toolchain_build --file docker/ppc64_pseries_toolchain_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
 
       - name: Build buildroot toolchain image
         run: docker build . --tag ppc64_pseries_toolchain --file docker/ppc64_pseries_toolchain.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
@@ -46,10 +50,14 @@ jobs:
         run: |
           docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
           docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+          docker tag ppc64_pseries_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
+          docker tag ppc64_pseries_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
           docker tag ppc64_pseries_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
           docker tag ppc64_pseries_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
 
