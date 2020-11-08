@@ -49,15 +49,6 @@ jobs:
           docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
 
-      - name: Push to GitHub Packages
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: egraff/xplat-ci-images/my-image
-          tag_with_ref: true
-
   ppc64_pseries_qemu_images:
     name: Buildroot images
     needs: ppc64_pseries_toolchain
