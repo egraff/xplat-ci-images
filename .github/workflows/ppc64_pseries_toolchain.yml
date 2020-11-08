@@ -1,0 +1,31 @@
+name: Buildroot toolchain for ppc64_pseries arch
+
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  ppc64_pseries_toolchain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Build buildroot base image
+        run: docker build -t buildroot --file docker/buildroot.Dockerfile .
+
+      - name: Build buildroot toolchain image
+        run: docker build -t ppc64_pseries_toolchain --file docker/ppc64_pseries_toolchain.Dockerfile .
+
+      - name: Create tar archive containing toolchain
+        run: |
+          rm -rf .output
+          mkdir .output
+          docker run --rm -v ${PWD}/.output:/output -w/output ppc64_pseries_toolchain tar -cvzf toolchain_powerpc64_pseries.tar.gz -C /root/toolchain/ppc64_pseries/ .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: toolchain_powerpc64_pseries.tar.gz
+          path: .output/toolchain_powerpc64_pseries.tar.gz

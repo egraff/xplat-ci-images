@@ -1,0 +1,22 @@
+FROM buildroot AS base
+WORKDIR /root/
+
+
+FROM base as build
+
+RUN \
+  apt-get update && \
+  apt-get install -y libc6-dev-i386 build-essential g++
+
+RUN \
+  cd /root/buildroot-2020.02.7 && \
+  make BR2_EXTERNAL=/repo/buildroot-tree ppc64_pseries_toolchain_defconfig && \
+  FORCE_UNSAFE_CONFIGURE=1 make toolchain
+
+
+FROM base
+WORKDIR /root/
+COPY --from=build /root/buildroot-2020.02.7/output/host/ /root/toolchain/ppc64_pseries/
+
+  tar -cvzf toolchain_powerpc64_pseries.tar.gz -C output/host/ . && \
+  mv toolchain_powerpc64_pseries.tar.gz
