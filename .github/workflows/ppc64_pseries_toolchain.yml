@@ -76,7 +76,9 @@ jobs:
       - name: Pull images from GitHub Package Registry
         run: |
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
+          docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA buildroot
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
+          docker tag docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA ppc64_pseries_toolchain
 
       - name: Download toolchain tar archive
         uses: actions/download-artifact@v2
