@@ -79,6 +79,7 @@ jobs:
           docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA buildroot
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
           docker tag docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA ppc64_pseries_toolchain
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest || true
 
       - name: Download toolchain tar archive
         uses: actions/download-artifact@v2
@@ -91,21 +92,15 @@ jobs:
           mkdir -p .dockersrv/toolchain/ppc64_pseries
           tar -xvzf toolchain_ppc64_pseries.tar.gz -C .dockersrv/toolchain/ppc64_pseries/
 
-      - name: Produce images
+      - name: Build buildroot images build image
+        run: docker build . --tag ppc64_pseries_images_build --file docker/ppc64_pseries_images_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+
+      - name: Copy images to output folder
         shell: bash
         run: |
           rm -rf .dockersrv
           mkdir -p .dockersrv/output
-          cat <<'EOF' >> .dockersrv/run.sh
-          #!/bin/bash
-          set -ev
-          cd /root/buildroot-2020.02.7
-          make BR2_EXTERNAL=/repo/buildroot-tree qemu_ppc64_pseries_images_using_external_toolchain_defconfig
-          FORCE_UNSAFE_CONFIGURE=1 make
-          cp -R output/images/ /srv/output/images/
-          EOF
-          chmod +x .dockersrv/run.sh
-          docker run --rm -v ${PWD}:/repo -v ${PWD}/.dockersrv:/srv -w/root ppc64_pseries_toolchain /srv/run.sh
+          docker run --rm -v ${PWD}:/repo -v ${PWD}/.dockersrv:/srv -w/root/buildroot-2020.02.7 ppc64_pseries_images_build bash -c "cp -R output/images/ /srv/images/"
 
       - name: Upload images as artifacts
         uses: actions/upload-artifact@v2
