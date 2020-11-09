@@ -88,3 +88,27 @@ jobs:
           rm -rf .dockersrv
           mkdir -p .dockersrv/toolchain/ppc64_pseries
           tar -xvzf toolchain_ppc64_pseries.tar.gz -C .dockersrv/toolchain/ppc64_pseries/
+
+      - name: Produce images
+        shell: bash
+        run: |
+          rm -rf .dockersrv
+          mkdir -p .dockersrv/output
+          cat <<'EOF' >> .dockersrv/run.sh
+          #!/bin/bash
+          set -ev
+          cd /root/buildroot-2020.02.7
+          make BR2_EXTERNAL=/repo/buildroot-tree qemu_ppc64_pseries_images_using_external_toolchain_defconfig
+          FORCE_UNSAFE_CONFIGURE=1 make
+          cp -R output/images/ /srv/output/images/
+          EOF
+          chmod +x .dockersrv/run.sh
+          docker run --rm -v ${PWD}:/repo -v ${PWD}/.dockersrv:/srv -w/root ppc64_pseries_toolchain /srv/run.sh
+
+      - name: Upload images as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: images
+          path: |
+            .dockersrv/output/images/vmlinux
+            .dockersrv/output/images/rootfs.cpio
