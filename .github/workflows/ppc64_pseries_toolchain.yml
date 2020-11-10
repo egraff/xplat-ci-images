@@ -108,7 +108,7 @@ jobs:
         run: |
           rm -rf .dockersrv
           mkdir -p .dockersrv/output
-          docker run --rm -v ${PWD}:/repo -v ${PWD}/.dockersrv:/srv -w/root/buildroot-2020.02.7 ppc64_pseries_images_build bash -c "cp -R output/images/ /srv/images/"
+          docker run --rm -v ${PWD}/.dockersrv:/srv ppc64_pseries_images_build bash -c "cp -R /root/buildroot-2020.02.7/output/images/ /srv/output/images/"
 
       - name: Upload images as artifacts
         uses: actions/upload-artifact@v2
