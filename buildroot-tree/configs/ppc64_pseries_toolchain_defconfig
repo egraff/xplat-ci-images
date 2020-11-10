@@ -9,3 +9,15 @@ BR2_TOOLCHAIN_GCC_AT_LEAST="9"
 BR2_GCC_VERSION_9_X=y
 
 BR2_INSTALL_LIBSTDCPP=y
+
+# Kernel
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_DEFCONFIG="pseries"
+BR2_LINUX_KERNEL_VMLINUX=y
+
+# Newer 4.19 kernel with fix for CRNG bug
+# See https://unix.stackexchange.com/questions/442698/when-i-log-in-it-hangs-until-crng-init-done
+# and https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=897572
+# and https://security-tracker.debian.org/tracker/CVE-2018-1108
+BR2_LINUX_KERNEL_CUSTOM_VERSION=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="4.19.152"
