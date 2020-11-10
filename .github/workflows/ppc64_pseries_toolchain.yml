@@ -95,6 +95,14 @@ jobs:
       - name: Build buildroot images build image
         run: docker build . --tag ppc64_pseries_images_build --file docker/ppc64_pseries_images_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
 
+      - name: Push to GitHub Packages
+        shell: bash
+        run: |
+          docker tag ppc64_pseries_images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
+          docker tag ppc64_pseries_images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+
       - name: Copy images to output folder
         shell: bash
         run: |
