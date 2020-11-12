@@ -16,4 +16,5 @@ RUN \
   cat ./buildroot-2020.02.7.checksum.txt | sed -n -e 's/^SHA1:\W*//p' | sha1sum --check && \
   tar -xvzf buildroot-2020.02.7.tar.gz -C /root && \
   cd /root && \
+  mv buildroot-2020.02.7 buildroot && \
   rm -rf /root/buildroot-dl

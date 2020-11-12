@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# DEBUG INIT SCRIPT
+#
+
+printf "DEBUG: BEGINNING OF INIT SCRIPT\n"
+
+case "$1" in
+  start)
+        printf "DEBUG: START\n"
+        ;;
+  stop)
+        printf "DEBUG: STOP\n"
+        ;;
+  restart|reload)
+        "$0" stop
+        "$0" start
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?

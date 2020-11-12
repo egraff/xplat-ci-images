@@ -1,21 +1,20 @@
-# Architecture
-BR2_powerpc64=y
-BR2_powerpc_power7=y
+##
+## Common preamble
+##
+
 
 # Root FS customizations
-BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/board/powerpc64_pseries/rootfs_overlay"
-BR2_ROOTFS_USERS_TABLES="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/board/powerpc64_pseries/users_table.txt"
-BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/board/powerpc64_pseries/post-build.sh"
-BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/board/powerpc64_pseries/post-image.sh"
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/build_customizations/rootfs_overlay"
+BR2_ROOTFS_USERS_TABLES="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/build_customizations/users_table.txt"
+BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/build_customizations/post-build.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/build_customizations/post-image.sh"
+BR2_ROOTFS_POST_FAKEROOT_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/build_customizations/post-fakeroot.sh"
 
 # Target filesystem images
 BR2_TARGET_ROOTFS_CPIO=y
-BR2_TARGET_ROOTFS_EXT2=y
-BR2_TARGET_ROOTFS_EXT2_SIZE="120M"
 
 # Kernel
 BR2_LINUX_KERNEL=y
-BR2_LINUX_KERNEL_DEFCONFIG="pseries"
 BR2_LINUX_KERNEL_VMLINUX=y
 
 # Newer 4.19 kernel with fix for CRNG bug
@@ -30,14 +29,10 @@ BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_4_19=y
 
 # External toolchain
 BR2_TOOLCHAIN_EXTERNAL=y
-BR2_TOOLCHAIN_EXTERNAL_PATH="/root/toolchain/ppc64_pseries"
+BR2_TOOLCHAIN_EXTERNAL_PATH="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/toolchain"
 BR2_TOOLCHAIN_EXTERNAL_HEADERS_4_19=y
 BR2_TOOLCHAIN_EXTERNAL_CUSTOM_GLIBC=y
 BR2_TOOLCHAIN_EXTERNAL_CXX=y
-
-# System
-BR2_SYSTEM_DHCP="eth0"
-BR2_TARGET_GENERIC_GETTY_PORT="hvc0"
 
 # Packages
 BR2_PACKAGE_STRACE=y
@@ -50,6 +45,11 @@ BR2_PACKAGE_OPENSSH=y
 BR2_PACKAGE_RNG_TOOLS=y
 BR2_PACKAGE_HAVEGED=y
 
-BR2_PACKAGE_HOST_QEMU=y
-BR2_PACKAGE_HOST_QEMU_SYSTEM_MODE=y
-BR2_PACKAGE_HOST_QEMU_VIRTFS=y
+
+###################
+
+
+##
+## Target-specific customizations
+##
+

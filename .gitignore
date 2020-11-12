@@ -1,4 +1,5 @@
 .dockersrv/
+.br2-tree/
 
 # Object files
 *.o

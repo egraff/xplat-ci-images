@@ -1,7 +1,7 @@
 FROM buildroot
 WORKDIR /root/
 
-COPY buildroot-tree/ /root/buildroot-tree/
+COPY .br2-tree/ /root/br2-tree/
 
 RUN \
   apt-get update && \
@@ -9,6 +9,6 @@ RUN \
   apt-get install -y cpio unzip rsync bc openssh-client
 
 RUN \
-  cd /root/buildroot-2020.02.7 && \
-  make BR2_EXTERNAL=/root/buildroot-tree ppc64_pseries_toolchain_defconfig && \
+  cd /root/buildroot && \
+  make BR2_EXTERNAL=/root/br2-tree config_defconfig && \
   FORCE_UNSAFE_CONFIGURE=1 make toolchain

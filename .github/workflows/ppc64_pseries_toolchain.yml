@@ -18,7 +18,6 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
       - name: Pull images from GitHub Package Registry
-        shell: bash
         run: |
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest || true
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest || true
@@ -27,22 +26,29 @@ jobs:
       - name: Build buildroot base image
         run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
 
-      - name: Build buildroot toolchain build image
-        run: docker build . --tag ppc64_pseries_toolchain_build --file docker/ppc64_pseries_toolchain_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
+      - name: Build toolchain_build image
+        shell: bash
+        run: |
+          rm -rf .br2-tree
+          mkdir -p .br2-tree/configs
+          cp -R br2/trees/default/* .br2-tree/
+          (cd br2/configs/toolchains && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
+          docker build . --tag buildroot_toolchain_build --file docker/buildroot_toolchain_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
 
-      - name: Build buildroot toolchain image
-        run: docker build . --tag ppc64_pseries_toolchain --file docker/ppc64_pseries_toolchain.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+      - name: Build toolchain image
+        run: docker build . --tag toolchain --file docker/buildroot_toolchain.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
 
       - name: Create tar archive containing toolchain
+        shell: bash
         run: |
           rm -rf .dockersrv
           mkdir -p .dockersrv/output
-          docker run --rm -v ${PWD}/.dockersrv:/srv -w/srv/output ppc64_pseries_toolchain tar -cvzf toolchain_ppc64_pseries.tar.gz -C /root/toolchain/ppc64_pseries/ .
+          docker run --rm -v ${PWD}/.dockersrv:/srv -w/srv/output ppc64_pseries_toolchain tar -cvzf toolchain_ppc64_pseries.tar.gz -C /root/br2-tree/toolchain .
 
       - name: Upload toolchain tar archive as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: toolchain_ppc64_pseries.tar.gz
+          name: toolchain_ppc64_pseries
           path: .dockersrv/output/toolchain_ppc64_pseries.tar.gz
 
       - name: Push to GitHub Packages
@@ -50,10 +56,10 @@ jobs:
         run: |
           docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
           docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
-          docker tag ppc64_pseries_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
-          docker tag ppc64_pseries_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
-          docker tag ppc64_pseries_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
-          docker tag ppc64_pseries_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+          docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
+          docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
+          docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
+          docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
@@ -78,37 +84,53 @@ jobs:
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
           docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA buildroot
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
-          docker tag docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA ppc64_pseries_toolchain
+          docker tag docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA buildroot_toolchain
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest || true
 
       - name: Download toolchain tar archive
         uses: actions/download-artifact@v2
         with:
-          name: toolchain_ppc64_pseries.tar.gz
+          name: toolchain_ppc64_pseries
 
       - name: Extract toolchain tar
+        shell: bash
         run: |
           rm -rf .dockersrv
-          mkdir -p .dockersrv/toolchain/ppc64_pseries
-          tar -xvzf toolchain_ppc64_pseries.tar.gz -C .dockersrv/toolchain/ppc64_pseries/
+          mkdir -p .dockersrv/toolchain
+          tar -xvzf toolchain_ppc64_pseries.tar.gz -C .dockersrv/toolchain
 
-      - name: Build buildroot images build image
-        run: docker build . --tag ppc64_pseries_images_build --file docker/ppc64_pseries_images_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+      - name: Build images_build image
+        shell: bash
+        run: |
+          rm -rf .br2-tree
+          mkdir -p .br2-tree/configs
+          mkdir -p .br2-tree/build_customizations
+          cp -R br2/trees/default/* .br2-tree/
+          cp -R br2/build_customizations/default/* .br2-tree/build_customizations/
+          (cd br2/configs/images && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
+          docker build . --tag images_build --file docker/images_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
 
       - name: Push to GitHub Packages
-        shell: bash
         run: |
           docker tag ppc64_pseries_images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
           docker tag ppc64_pseries_images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
 
+      - name: Build images_with_sshserver_build image
+        shell: bash
+        run: |
+          rm -rf .br2-tree
+          mkdir -p .br2-tree/build_customizations
+          cp -R br2/build_customizations/sshserver/* .br2-tree/build_customizations/
+          docker build . --tag images_with_sshserver_build --file docker/images_with_customizations_build.Dockerfile
+
       - name: Copy images to output folder
         shell: bash
         run: |
           rm -rf .dockersrv
           mkdir -p .dockersrv/output
-          docker run --rm -v ${PWD}/.dockersrv:/srv ppc64_pseries_images_build bash -c "cp -R /root/buildroot-2020.02.7/output/images/ /srv/output/images/"
+          docker run --rm -v ${PWD}/.dockersrv:/srv images_with_sshserver_build bash -c "cp -R /root/buildroot/output/images/ /srv/output/images/"
 
       - name: Upload images as artifacts
         uses: actions/upload-artifact@v2
