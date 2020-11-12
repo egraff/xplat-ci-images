@@ -43,7 +43,7 @@ jobs:
         run: |
           rm -rf .dockersrv
           mkdir -p .dockersrv/output
-          docker run --rm -v ${PWD}/.dockersrv:/srv -w/srv/output ppc64_pseries_toolchain tar -cvzf toolchain_ppc64_pseries.tar.gz -C /root/br2-tree/toolchain .
+          docker run --rm -v ${PWD}/.dockersrv:/srv -w/srv/output toolchain tar -cvzf toolchain_ppc64_pseries.tar.gz -C /root/br2-tree/toolchain .
 
       - name: Upload toolchain tar archive as artifact
         uses: actions/upload-artifact@v2
