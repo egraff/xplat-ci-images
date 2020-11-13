@@ -31,7 +31,7 @@ jobs:
         run: |
           rm -rf .br2-tree
           mkdir -p .br2-tree/configs
-          cp -R br2/trees/default/* .br2-tree/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
           (cd br2/configs/toolchains && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
           docker build . --tag buildroot_toolchain_build --file docker/buildroot_toolchain_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
 
@@ -105,8 +105,8 @@ jobs:
           rm -rf .br2-tree
           mkdir -p .br2-tree/configs
           mkdir -p .br2-tree/build_customizations
-          cp -R br2/trees/default/* .br2-tree/
-          cp -R br2/build_customizations/default/* .br2-tree/build_customizations/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/build_customizations/default/ .br2-tree/build_customizations/
           (cd br2/configs/images && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
           docker build . --tag images_build --file docker/images_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
 
@@ -122,7 +122,7 @@ jobs:
         run: |
           rm -rf .br2-tree
           mkdir -p .br2-tree/build_customizations
-          cp -R br2/build_customizations/sshserver/* .br2-tree/build_customizations/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/build_customizations/sshserver/ .br2-tree/build_customizations/
           docker build . --tag images_with_sshserver_build --file docker/images_with_customizations_build.Dockerfile
 
       - name: Copy images to output folder
