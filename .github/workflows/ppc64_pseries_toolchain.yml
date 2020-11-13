@@ -112,8 +112,8 @@ jobs:
 
       - name: Push to GitHub Packages
         run: |
-          docker tag ppc64_pseries_images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
-          docker tag ppc64_pseries_images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+          docker tag images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
+          docker tag images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
 
