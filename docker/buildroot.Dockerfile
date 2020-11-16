@@ -16,7 +16,7 @@ RUN \
   wget https://buildroot.org/downloads/buildroot-2020.02.7.tar.gz.sign && \
   gpg --no-default-keyring --trust-model always --keyring ./B025BA8B59C36319.gpg --output ./buildroot-2020.02.7.checksum.txt --decrypt ./buildroot-2020.02.7.tar.gz.sign && \
   cat ./buildroot-2020.02.7.checksum.txt | sed -n -e 's/^SHA1:\W*//p' | sha1sum --check && \
-  tar -xvzf buildroot-2020.02.7.tar.gz -C /root && \
+  tar -xzf buildroot-2020.02.7.tar.gz -C /root && \
   cd /root && \
   mv buildroot-2020.02.7 buildroot && \
   rm -rf /root/buildroot-dl
