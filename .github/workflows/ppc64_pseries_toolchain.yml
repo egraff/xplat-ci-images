@@ -6,7 +6,7 @@ on:
 
 
 jobs:
-  ppc64_pseries_toolchain:
+  buildroot_base:
     name: Buildroot toolchain
     runs-on: ubuntu-latest
     steps:
@@ -18,13 +18,56 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
       - name: Pull images from GitHub Package Registry
+        shell: bash
         run: |
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest || true
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest || true
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest || true
+          (docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest && docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest buildroot) || true
+          (docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest && docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest buildroot_with_dl_cache_build) || true
+          (docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest && docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest buildroot_with_dl_cache) || true
 
       - name: Build buildroot base image
-        run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+        run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from buildroot
+
+      - name: Build buildroot_with_dl_cache_build image
+        run: docker build . --tag buildroot_with_dl_cache_build --file docker/buildroot_with_dl_cache_build.Dockerfile --cache-from buildroot_with_dl_cache_build
+
+      - name: Build buildroot_with_dl_cache image
+        run: docker build . --tag buildroot_with_dl_cache --file docker/buildroot_with_dl_cache.Dockerfile --cache-from buildroot_with_dl_cache
+
+      - name: Push to GitHub Packages
+        shell: bash
+        run: |
+          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
+          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+          docker tag buildroot_with_dl_cache_build docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:$GITHUB_SHA
+          docker tag buildroot_with_dl_cache_build docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest
+          docker tag buildroot_with_dl_cache docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:$GITHUB_SHA
+          docker tag buildroot_with_dl_cache docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:$GITHUB_SHA
+          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
+
+  ppc64_pseries_toolchain:
+    name: Buildroot toolchain
+    needs: buildroot_base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Package Registry
+        shell: bash
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Pull images from GitHub Package Registry
+        shell: bash
+        run: |
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
+          docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest buildroot
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest || true
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest || true
 
       - name: Build toolchain_build image
         shell: bash
@@ -42,8 +85,6 @@ jobs:
       - name: Push to GitHub Packages
         shell: bash
         run: |
-          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
-          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
           docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
           docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
           docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
@@ -82,8 +123,8 @@ jobs:
 
       - name: Pull images from GitHub Package Registry
         run: |
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
-          docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA buildroot
+          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
+          docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest buildroot
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
           docker tag docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA buildroot_toolchain
           docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest || true
