@@ -7,7 +7,7 @@ on:
 
 jobs:
   buildroot_base:
-    name: Buildroot toolchain
+    name: Buildroot base
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
