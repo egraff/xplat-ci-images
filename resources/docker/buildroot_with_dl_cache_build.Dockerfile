@@ -34,6 +34,7 @@ RUN make host-gettext-tiny-source
 RUN make host-gmp-source
 RUN make host-kmod-source
 RUN make host-libtool-source
+RUN make host-lz4-source
 RUN make host-mpc-source
 RUN make host-mpfr-source
 RUN make host-m4-source
