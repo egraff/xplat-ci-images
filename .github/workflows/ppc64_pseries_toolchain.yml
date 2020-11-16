@@ -98,7 +98,7 @@ jobs:
           docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest
           docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest
-          docker push ${{ env.GH_PKG_PREFIX }${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest
 
       - name: Create tar archive containing toolchain
