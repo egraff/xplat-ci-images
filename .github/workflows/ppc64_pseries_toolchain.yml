@@ -5,6 +5,10 @@ on:
   workflow_dispatch:
 
 
+env:
+  GH_PKG_PREFIX: docker.pkg.github.com/egraff/xplat-ci-images/
+
+
 jobs:
   buildroot_base:
     name: Buildroot base
@@ -20,9 +24,9 @@ jobs:
       - name: Pull images from GitHub Package Registry
         shell: bash
         run: |
-          (docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest && docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest buildroot) || true
-          (docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest && docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest buildroot_with_dl_cache_build) || true
-          (docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest && docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest buildroot_with_dl_cache) || true
+          (docker pull ${{ env.GH_PKG_PREFIX }}buildroot:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot:latest buildroot) || true
+          (docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest buildroot_with_dl_cache_build) || true
+          (docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot_with_dl_cache) || true
 
       - name: Build buildroot base image
         run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from buildroot
@@ -36,23 +40,26 @@ jobs:
       - name: Push to GitHub Packages
         shell: bash
         run: |
-          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
-          docker tag buildroot docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
-          docker tag buildroot_with_dl_cache_build docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:$GITHUB_SHA
-          docker tag buildroot_with_dl_cache_build docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest
-          docker tag buildroot_with_dl_cache docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:$GITHUB_SHA
-          docker tag buildroot_with_dl_cache docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache_build:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
+          docker tag buildroot ${{ env.GH_PKG_PREFIX }}buildroot:$GITHUB_SHA
+          docker tag buildroot ${{ env.GH_PKG_PREFIX }}buildroot:latest
+          docker tag buildroot_with_dl_cache_build ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:$GITHUB_SHA
+          docker tag buildroot_with_dl_cache_build ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest
+          docker tag buildroot_with_dl_cache ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
+          docker tag buildroot_with_dl_cache ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
+          docker push ${{ env.GH_PKG_PREFIX }}buildroot:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}buildroot:latest
+          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest
+          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
 
   ppc64_pseries_toolchain:
     name: Buildroot toolchain
     needs: buildroot_base
     runs-on: ubuntu-latest
+    env:
+      IMG_ARCH_PREFIX: ppc64_pseries_
+      BR2_CONFIG_FILE: ppc64_pseries
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -64,10 +71,10 @@ jobs:
       - name: Pull images from GitHub Package Registry
         shell: bash
         run: |
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
-          docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest buildroot
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest || true
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest || true
+          docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
+          docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
+          (docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest buildroot_toolchain_build) || true
+          (docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}oolchain:latest buildroot_toolchain) || true
 
       - name: Build toolchain_build image
         shell: bash
@@ -76,23 +83,23 @@ jobs:
           mkdir -p .br2-tree/configs
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
           cp resources/linux_configs/powerpc64_pseries_defconfig .br2-tree/linux-4.19.config
-          (cd br2/configs/toolchains && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
-          docker build . --tag buildroot_toolchain_build --file docker/buildroot_toolchain_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
+          (cd br2/configs/toolchains && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
+          docker build . --tag buildroot_toolchain_build --file docker/buildroot_toolchain_build.Dockerfile --cache-from buildroot_toolchain_build
 
       - name: Build toolchain image
-        run: docker build . --tag buildroot_toolchain --file docker/buildroot_toolchain.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+        run: docker build . --tag buildroot_toolchain --file docker/buildroot_toolchain.Dockerfile --cache-from buildroot_toolchain
 
       - name: Push to GitHub Packages
         shell: bash
         run: |
-          docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
-          docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
-          docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
-          docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
+          docker tag buildroot_toolchain_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:$GITHUB_SHA
+          docker tag buildroot_toolchain_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest
+          docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
+          docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest
+          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest
+          docker push ${{ env.GH_PKG_PREFIX }${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest
 
       - name: Create tar archive containing toolchain
         shell: bash
@@ -111,6 +118,9 @@ jobs:
     name: Buildroot images
     needs: ppc64_pseries_toolchain
     runs-on: ubuntu-latest
+    env:
+      IMG_ARCH_PREFIX: ppc64_pseries_
+      BR2_CONFIG_FILE: ppc64_pseries
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -121,23 +131,11 @@ jobs:
 
       - name: Pull images from GitHub Package Registry
         run: |
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest
-          docker tag docker.pkg.github.com/egraff/xplat-ci-images/buildroot_with_dl_cache:latest buildroot
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
-          docker tag docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA buildroot_toolchain
-          docker pull docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest || true
-
-      - name: Download toolchain tar archive
-        uses: actions/download-artifact@v2
-        with:
-          name: toolchain_ppc64_pseries
-
-      - name: Extract toolchain tar
-        shell: bash
-        run: |
-          rm -rf .dockersrv
-          mkdir -p .dockersrv/toolchain
-          tar -xvzf toolchain_ppc64_pseries.tar.gz -C .dockersrv/toolchain
+          docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
+          docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
+          docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
+          docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA buildroot_toolchain
+          (docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest images_build) || true
 
       - name: Build images_build image
         shell: bash
@@ -147,15 +145,15 @@ jobs:
           mkdir -p .br2-tree/build_customizations
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/build_customizations/default/ .br2-tree/build_customizations/
-          (cd br2/configs/images && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
-          docker build . --tag images_build --file docker/images_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+          (cd br2/configs/images && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
+          docker build . --tag images_build --file docker/images_build.Dockerfile --cache-from images_build
 
       - name: Push to GitHub Packages
         run: |
-          docker tag images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
-          docker tag images_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_images_build:latest
+          docker tag images_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:$GITHUB_SHA
+          docker tag images_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest
+          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest
 
       - name: Build images_with_sshserver_build image
         shell: bash
