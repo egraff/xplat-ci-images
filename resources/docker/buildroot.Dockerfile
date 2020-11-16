@@ -8,7 +8,7 @@ RUN \
   apt-get install -y cpio unzip rsync bc openssh-client
 
 RUN mkdir -p /root/buildroot-dl
-COPY external/buildroot/*.gpg /root/buildroot-dl
+COPY resources/external/buildroot/*.gpg /root/buildroot-dl
 
 RUN \
   cd /root/buildroot-dl && \

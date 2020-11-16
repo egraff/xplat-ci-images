@@ -29,13 +29,13 @@ jobs:
           (docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot_with_dl_cache) || true
 
       - name: Build buildroot base image
-        run: docker build . --tag buildroot --file docker/buildroot.Dockerfile --cache-from buildroot
+        run: docker build . --tag buildroot --file resources/docker/buildroot.Dockerfile --cache-from buildroot
 
       - name: Build buildroot_with_dl_cache_build image
-        run: docker build . --tag buildroot_with_dl_cache_build --file docker/buildroot_with_dl_cache_build.Dockerfile --cache-from buildroot_with_dl_cache_build
+        run: docker build . --tag buildroot_with_dl_cache_build --file resources/docker/buildroot_with_dl_cache_build.Dockerfile --cache-from buildroot_with_dl_cache_build
 
       - name: Build buildroot_with_dl_cache image
-        run: docker build . --tag buildroot_with_dl_cache --file docker/buildroot_with_dl_cache.Dockerfile --cache-from buildroot_with_dl_cache
+        run: docker build . --tag buildroot_with_dl_cache --file resources/docker/buildroot_with_dl_cache.Dockerfile --cache-from buildroot_with_dl_cache
 
       - name: Push to GitHub Packages
         shell: bash
@@ -81,13 +81,13 @@ jobs:
         run: |
           rm -rf .br2-tree
           mkdir -p .br2-tree/configs
-          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
           cp resources/linux_configs/powerpc64_pseries_defconfig .br2-tree/linux-4.19.config
-          (cd br2/configs/toolchains && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
-          docker build . --tag buildroot_toolchain_build --file docker/buildroot_toolchain_build.Dockerfile --cache-from buildroot_toolchain_build
+          (cd resources/br2/configs/toolchains && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
+          docker build . --tag buildroot_toolchain_build --file resources/docker/buildroot_toolchain_build.Dockerfile --cache-from buildroot_toolchain_build
 
       - name: Build toolchain image
-        run: docker build . --tag buildroot_toolchain --file docker/buildroot_toolchain.Dockerfile --cache-from buildroot_toolchain
+        run: docker build . --tag buildroot_toolchain --file resources/docker/buildroot_toolchain.Dockerfile --cache-from buildroot_toolchain
 
       - name: Push to GitHub Packages
         shell: bash
@@ -143,10 +143,10 @@ jobs:
           rm -rf .br2-tree
           mkdir -p .br2-tree/configs
           mkdir -p .br2-tree/build_customizations
-          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
-          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/build_customizations/default/ .br2-tree/build_customizations/
-          (cd br2/configs/images && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
-          docker build . --tag images_build --file docker/images_build.Dockerfile --cache-from images_build
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/default/ .br2-tree/build_customizations/
+          (cd resources/br2/configs/images && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
+          docker build . --tag images_build --file resources/docker/images_build.Dockerfile --cache-from images_build
 
       - name: Push to GitHub Packages
         run: |
@@ -160,8 +160,8 @@ jobs:
         run: |
           rm -rf .br2-tree
           mkdir -p .br2-tree/build_customizations
-          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/build_customizations/sshserver/ .br2-tree/build_customizations/
-          docker build . --tag images_with_sshserver_build --file docker/images_with_customizations_build.Dockerfile
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/sshserver/ .br2-tree/build_customizations/
+          docker build . --tag images_with_sshserver_build --file resources/docker/images_with_customizations_build.Dockerfile
 
       - name: Copy images to output folder
         shell: bash
