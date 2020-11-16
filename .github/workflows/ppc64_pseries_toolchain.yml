@@ -32,6 +32,7 @@ jobs:
           rm -rf .br2-tree
           mkdir -p .br2-tree/configs
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' br2/trees/default/ .br2-tree/
+          cp resources/linux_configs/powerpc64_pseries_defconfig .br2-tree/linux-4.19.config
           (cd br2/configs/toolchains && cat include/common_header ppc64_pseries) > .br2-tree/configs/config_defconfig
           docker build . --tag buildroot_toolchain_build --file docker/buildroot_toolchain_build.Dockerfile --cache-from docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
 
