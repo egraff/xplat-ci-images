@@ -89,8 +89,6 @@ jobs:
           docker tag buildroot_toolchain_build docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
           docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
           docker tag buildroot_toolchain docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:latest
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:$GITHUB_SHA
-          docker push docker.pkg.github.com/egraff/xplat-ci-images/buildroot:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:$GITHUB_SHA
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain_build:latest
           docker push docker.pkg.github.com/egraff/xplat-ci-images/ppc64_pseries_toolchain:$GITHUB_SHA
