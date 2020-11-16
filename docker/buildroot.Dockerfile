@@ -3,7 +3,9 @@ WORKDIR /root/
 
 RUN \
   apt-get update && \
-  apt-get install -y coreutils wget software-properties-common
+  apt-get install -y coreutils wget software-properties-common && \
+  apt-get install -y libc6-dev-i386 build-essential g++ && \
+  apt-get install -y cpio unzip rsync bc openssh-client
 
 RUN mkdir -p /root/buildroot-dl
 COPY external/buildroot/*.gpg /root/buildroot-dl
