@@ -13,7 +13,7 @@ COPY resources/runimage/qemu_run_scripts/qemu_run_${arch}.sh /etc/service/qemu/r
 
 RUN chmod 700 /root/.ssh && chmod 644 /root/.ssh/known_hosts && chmod +x /root/run.sh
 
-COPY --from=build /root/buildroot/output/images/rootfs.cpio.lz4 /root/buildroot/output/images/zImage /opt/xplat-ci-images/${arch}/
+COPY --from=build /root/buildroot/output/images/ /opt/xplat-ci-images/${arch}/
 
 RUN \
   apt-get update && \
