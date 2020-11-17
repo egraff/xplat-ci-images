@@ -1,4 +1,4 @@
-name: Buildroot for ppc64_pseries arch
+name: Multi-architecture environment images
 
 
 on:
@@ -53,13 +53,18 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
 
-  ppc64_pseries_toolchain:
+
+  buildroot_toolchain:
     name: Buildroot toolchain
     needs: buildroot_base
     runs-on: ubuntu-latest
-    env:
-      IMG_ARCH_PREFIX: ppc64_pseries_
-      BR2_CONFIG_FILE: ppc64_pseries
+    strategy:
+      matrix:
+        include:
+          # 64-bit PowerPC big-endian (ppc64)
+          - img_arch_prefix: ppc64_pseries_
+            br2_config_file: ppc64_pseries
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -73,8 +78,8 @@ jobs:
         run: |
           docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
           docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
-          (docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest buildroot_toolchain_build) || true
-          (docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}oolchain:latest buildroot_toolchain) || true
+          (docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest buildroot_toolchain_build) || true
+          (docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}oolchain:latest buildroot_toolchain) || true
 
       - name: Build toolchain_build image
         shell: bash
@@ -83,7 +88,7 @@ jobs:
           mkdir -p .br2-tree/configs
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
           cp resources/linux_configs/powerpc64_pseries_defconfig .br2-tree/linux-4.19.config
-          (cd resources/br2/configs/toolchains && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
+          (cd resources/br2/configs/toolchains && cat include/common_header ${{ matrix.br2_config_file }}) > .br2-tree/configs/config_defconfig
           docker build . --tag buildroot_toolchain_build --file resources/docker/buildroot_toolchain_build.Dockerfile --cache-from buildroot_toolchain_build
 
       - name: Build toolchain image
@@ -92,35 +97,27 @@ jobs:
       - name: Push to GitHub Packages
         shell: bash
         run: |
-          docker tag buildroot_toolchain_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:$GITHUB_SHA
-          docker tag buildroot_toolchain_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest
-          docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
-          docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest
-          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain_build:latest
-          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:latest
+          docker tag buildroot_toolchain_build ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA
+          docker tag buildroot_toolchain_build ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest
+          docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
+          docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest
 
-      - name: Create tar archive containing toolchain
-        shell: bash
-        run: |
-          rm -rf .dockersrv
-          mkdir -p .dockersrv/output
-          docker run --rm -v ${PWD}/.dockersrv:/srv -w/srv/output buildroot_toolchain tar -cvzf toolchain_ppc64_pseries.tar.gz -C /root/br2-tree/toolchain .
 
-      - name: Upload toolchain tar archive as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: toolchain_ppc64_pseries
-          path: .dockersrv/output/toolchain_ppc64_pseries.tar.gz
-
-  ppc64_pseries_qemu_images:
+  buildroot_images:
     name: Buildroot images
     needs: ppc64_pseries_toolchain
     runs-on: ubuntu-latest
-    env:
-      IMG_ARCH_PREFIX: ppc64_pseries_
-      BR2_CONFIG_FILE: ppc64_pseries
+    strategy:
+      matrix:
+        include:
+          # 64-bit PowerPC big-endian (ppc64)
+          - img_arch_prefix: ppc64_pseries_
+            br2_config_file: ppc64_pseries
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -133,9 +130,9 @@ jobs:
         run: |
           docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
           docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
-          docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA
-          docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}toolchain:$GITHUB_SHA buildroot_toolchain
-          (docker pull ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest images_build) || true
+          docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
+          docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA buildroot_toolchain
+          (docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest images_build) || true
 
       - name: Build images_build image
         shell: bash
@@ -145,15 +142,15 @@ jobs:
           mkdir -p .br2-tree/build_customizations
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/default/ .br2-tree/build_customizations/
-          (cd resources/br2/configs/images && cat include/common_header ${{ env.BR2_CONFIG_FILE }}) > .br2-tree/configs/config_defconfig
+          (cd resources/br2/configs/images && cat include/common_header ${{ matrix.br2_config_file }}) > .br2-tree/configs/config_defconfig
           docker build . --tag images_build --file resources/docker/images_build.Dockerfile --cache-from images_build
 
       - name: Push to GitHub Packages
         run: |
-          docker tag images_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:$GITHUB_SHA
-          docker tag images_build ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest
-          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}${{ env.IMG_ARCH_PREFIX }}images_build:latest
+          docker tag images_build ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:$GITHUB_SHA
+          docker tag images_build ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest
 
       - name: Build images_with_sshserver_build image
         shell: bash
