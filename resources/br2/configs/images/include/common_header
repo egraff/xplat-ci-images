@@ -11,6 +11,7 @@ BR2_ROOTFS_POST_IMAGE_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PA
 BR2_ROOTFS_POST_FAKEROOT_SCRIPT="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/build_customizations/post-fakeroot.sh"
 
 # Target filesystem images
+BR2_TARGET_ROOTFS_CPIO=y
 BR2_TARGET_ROOTFS_CPIO_LZ4=y
 
 # Kernel
