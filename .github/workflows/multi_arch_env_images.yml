@@ -160,7 +160,8 @@ jobs:
       matrix:
         include:
           # 64-bit PowerPC big-endian (ppc64)
-          - img_arch_prefix: ppc64_pseries_
+          - arch_prefix: powerpc64
+            img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
 
     steps:
@@ -204,16 +205,35 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest
 
-      - name: Build images_with_sshserver_build image
+      - name: Build runimage
         shell: bash
         run: |
           rm -rf .br2-tree
           mkdir -p .br2-tree/build_customizations
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/sshserver/ .br2-tree/build_customizations/
           docker build . \
-            --tag images_with_sshserver_build \
+            --tag images_build_001 \
             --file resources/docker/buildroot_makebuild.Dockerfile \
             --build-arg baseimage=images_build
+          rm -rf .br2-tree
+          mkdir -p .br2-tree/build_customizations
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/virtio_9p_mnt/ .br2-tree/build_customizations/
+          docker build . \
+            --tag images_build_002 \
+            --file resources/docker/buildroot_makebuild.Dockerfile \
+            --build-arg baseimage=images_build_001
+          docker build . \
+            --tag runimage \
+            --file resources/docker/runimage.Dockerfile \
+            --build-arg buildimage=images_build_002 \
+            --build-arg arch=${{ matrix.arch_prefix }}
+
+      - name: Push to GitHub Packages
+        run: |
+          docker tag runimage ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:$GITHUB_SHA
+          docker tag runimage ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:latest
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:latest
 
       - name: Copy images to output folder
         shell: bash
