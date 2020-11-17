@@ -231,5 +231,5 @@ jobs:
         with:
           name: images
           path: |
-            .dockersrv/output/images/zImage
+            .dockersrv/output/images/vmlinux
             .dockersrv/output/images/rootfs.cpio.lz4
