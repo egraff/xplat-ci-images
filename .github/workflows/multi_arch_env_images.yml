@@ -109,7 +109,7 @@ jobs:
 
   buildroot_images:
     name: Buildroot images
-    needs: ppc64_pseries_toolchain
+    needs: buildroot_toolchain
     runs-on: ubuntu-latest
     strategy:
       matrix:
