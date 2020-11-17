@@ -1,4 +1,7 @@
-FROM buildroot_with_dl_cache_build AS build
-FROM buildroot
+ARG buildimage
+ARG baseimage
+
+FROM ${buildimage} AS build
+FROM ${baseimage}
 WORKDIR /root/
 COPY --from=build /root/buildroot/dl/ /root/buildroot/dl/

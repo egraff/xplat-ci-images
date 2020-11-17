@@ -1,4 +1,6 @@
-FROM buildroot
+ARG baseimage
+
+FROM ${baseimage}
 WORKDIR /root/buildroot/
 
 RUN \

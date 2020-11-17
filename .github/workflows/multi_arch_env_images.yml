@@ -24,18 +24,45 @@ jobs:
       - name: Pull images from GitHub Package Registry
         shell: bash
         run: |
-          (docker pull ${{ env.GH_PKG_PREFIX }}buildroot:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot:latest buildroot) || true
-          (docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest buildroot_with_dl_cache_build) || true
-          (docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest && docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot_with_dl_cache) || true
+          (
+            docker pull ${{ env.GH_PKG_PREFIX }}buildroot:latest &&
+            docker tag  ${{ env.GH_PKG_PREFIX }}buildroot:latest buildroot
+          ) || true
+          (
+            docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest &&
+            docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest buildroot_with_dl_cache_build
+          ) || true
+          (
+            docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest &&
+            docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot_with_dl_cache
+          ) || true
 
       - name: Build buildroot base image
-        run: docker build . --tag buildroot --file resources/docker/buildroot.Dockerfile --cache-from buildroot
+        shell: bash
+        run: |
+          docker build . \
+            --tag buildroot \
+            --file resources/docker/buildroot.Dockerfile \
+            --cache-from buildroot
 
       - name: Build buildroot_with_dl_cache_build image
-        run: docker build . --tag buildroot_with_dl_cache_build --file resources/docker/buildroot_with_dl_cache_build.Dockerfile --cache-from buildroot_with_dl_cache_build
+        shell: bash
+        run: |
+          docker build . \
+            --tag buildroot_with_dl_cache_build \
+            --file resources/docker/buildroot_with_dl_cache_build.Dockerfile \
+            --build-arg baseimage=buildroot \
+            --cache-from buildroot_with_dl_cache_build
 
       - name: Build buildroot_with_dl_cache image
-        run: docker build . --tag buildroot_with_dl_cache --file resources/docker/buildroot_with_dl_cache.Dockerfile --cache-from buildroot_with_dl_cache
+        shell: bash
+        run: |
+          docker build . \
+            --tag buildroot_with_dl_cache \
+            --file resources/docker/buildroot_with_dl_cache.Dockerfile \
+            --build-arg buildimage=buildroot_with_dl_cache_build \
+            --build-arg baseimage=buildroot \
+            --cache-from buildroot_with_dl_cache
 
       - name: Push to GitHub Packages
         shell: bash
@@ -77,9 +104,15 @@ jobs:
         shell: bash
         run: |
           docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
-          docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
-          (docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest buildroot_toolchain_build) || true
-          (docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}oolchain:latest buildroot_toolchain) || true
+          docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
+          (
+            docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest &&
+            docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest buildroot_toolchain_build
+          ) || true
+          (
+            docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest &&
+            docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}oolchain:latest buildroot_toolchain
+          ) || true
 
       - name: Build toolchain_build image
         shell: bash
@@ -89,10 +122,22 @@ jobs:
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
           cp resources/linux_configs/powerpc64_pseries_defconfig .br2-tree/linux-4.19.config
           (cd resources/br2/configs/toolchains && cat include/common_header ${{ matrix.br2_config_file }}) > .br2-tree/configs/config_defconfig
-          docker build . --tag buildroot_toolchain_build --file resources/docker/buildroot_toolchain_build.Dockerfile --cache-from buildroot_toolchain_build
+          docker build . \
+            --tag buildroot_toolchain_build \
+            --file resources/docker/buildroot_makebuild.Dockerfile \
+            --build-arg baseimage=buildroot \
+            --build-arg make_target=toolchain \
+            --cache-from buildroot_toolchain_build
 
       - name: Build toolchain image
-        run: docker build . --tag buildroot_toolchain --file resources/docker/buildroot_toolchain.Dockerfile --cache-from buildroot_toolchain
+        shell: bash
+        run: |
+          docker build . \
+            --tag buildroot_toolchain \
+            --file resources/docker/buildroot_toolchain.Dockerfile \
+            --build-arg buildimage=buildroot_toolchain_build \
+            --build-arg baseimage=buildroot \
+            --cache-from buildroot_toolchain
 
       - name: Push to GitHub Packages
         shell: bash
@@ -129,10 +174,13 @@ jobs:
       - name: Pull images from GitHub Package Registry
         run: |
           docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
-          docker tag ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
+          docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
           docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
-          docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA buildroot_toolchain
-          (docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest && docker tag ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest images_build) || true
+          docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA buildroot_toolchain
+          (
+            docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest &&
+            docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest images_build
+          ) || true
 
       - name: Build images_build image
         shell: bash
@@ -143,7 +191,11 @@ jobs:
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/default/ .br2-tree/build_customizations/
           (cd resources/br2/configs/images && cat include/common_header ${{ matrix.br2_config_file }}) > .br2-tree/configs/config_defconfig
-          docker build . --tag images_build --file resources/docker/images_build.Dockerfile --cache-from images_build
+          docker build . \
+            --tag images_build \
+            --file resources/docker/buildroot_makebuild.Dockerfile \
+            --build-arg baseimage=buildroot_toolchain \
+            --cache-from images_build
 
       - name: Push to GitHub Packages
         run: |
@@ -158,14 +210,21 @@ jobs:
           rm -rf .br2-tree
           mkdir -p .br2-tree/build_customizations
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/sshserver/ .br2-tree/build_customizations/
-          docker build . --tag images_with_sshserver_build --file resources/docker/images_with_customizations_build.Dockerfile
+          docker build . \
+            --tag images_with_sshserver_build \
+            --file resources/docker/buildroot_makebuild.Dockerfile \
+            --build-arg baseimage=images_build
 
       - name: Copy images to output folder
         shell: bash
         run: |
           rm -rf .dockersrv
           mkdir -p .dockersrv/output
-          docker run --rm -v ${PWD}/.dockersrv:/srv images_with_sshserver_build bash -c "cp -R /root/buildroot/output/images/ /srv/output/images/"
+          docker run \
+            --rm \
+            -v ${PWD}/.dockersrv:/srv \
+            images_with_sshserver_build \
+            bash -c "cp -R /root/buildroot/output/images/ /srv/output/images/"
 
       - name: Upload images as artifacts
         uses: actions/upload-artifact@v2
