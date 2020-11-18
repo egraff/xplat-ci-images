@@ -18,8 +18,11 @@ BR2_GCC_VERSION_9_X=y\n'\
 
 RUN make defconfig
 
+RUN make bash-source
 RUN make binutils-source
 RUN make busybox-source
+RUN make bzip2-source
+RUN make expat-source
 RUN make glibc-source
 RUN make haveged-source
 RUN make host-acl-source
@@ -35,22 +38,34 @@ RUN make host-gcc-initial-source
 RUN make host-gettext-tiny-source
 RUN make host-gmp-source
 RUN make host-kmod-source
+RUN make host-libffi-source
 RUN make host-libtool-source
+RUN make host-libzlib-source
 RUN make host-lz4-source
+RUN make host-meson-source
 RUN make host-mpc-source
 RUN make host-mpfr-source
 RUN make host-m4-source
+RUN make host-ncurses-source
 RUN make host-patchelf-source
 RUN make host-pkgconf-source
+RUN make host-python3-source
 RUN make host-tar-source
 RUN make jitterentropy-library-source
+RUN make jsoncpp-source
+RUN make libarchive-source
+RUN make libcurl-source
 RUN make libopenssl-source
 RUN make libsysfs-source
+RUN make libuv-source
 RUN make libzlib-source
+RUN make ncurses-source
 RUN make openssh-source
+RUN make rhash-source
 RUN make rng-tools-source
 RUN make strace-source
 RUN make valgrind-source
+RUN make xz-source
 
 RUN \
   echo "sha256  a5a6aa9c2c2810efa72b5d9723de86ccea3f965b2dd748d15e82d5fac23a055d  linux-4.19.152.tar.xz" >> package/linux-headers/linux-headers.hash && \
