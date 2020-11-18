@@ -1,9 +1,9 @@
 ARG buildimage
-ARG arch
 
 FROM ${buildimage} as build
-
 FROM phusion/baseimage:bionic-1.0.0
+
+ARG arch
 
 WORKDIR /root/
 CMD ["/sbin/my_init"]

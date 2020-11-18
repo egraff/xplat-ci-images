@@ -1,8 +1,7 @@
 ARG baseimage
-ARG make_target=
 
 FROM ${baseimage}
-WORKDIR /root/
+ARG make_target=
 
 COPY .br2-tree/ /root/br2-tree/
 
