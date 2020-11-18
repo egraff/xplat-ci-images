@@ -1,7 +1,3 @@
-#
-# Post-build script for buildroot
-#
-
 TARGET_ROOT_FS=$1
 
 chmod 644 ${TARGET_ROOT_FS}/etc/ssh/moduli

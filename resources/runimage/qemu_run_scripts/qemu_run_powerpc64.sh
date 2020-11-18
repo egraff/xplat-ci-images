@@ -13,4 +13,4 @@ exec qemu-system-ppc64 \
   -net nic \
   -serial tcp:127.0.0.1:4321,server,nowait \
   -device virtio-rng-pci \
-  -virtfs local,path=/srv,security_model=mapped,mount_tag=hostmnt9p
+  -virtfs local,path=/mnt,security_model=mapped,mount_tag=hostmnt9p

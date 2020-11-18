@@ -160,7 +160,7 @@ jobs:
       matrix:
         include:
           # 64-bit PowerPC big-endian (ppc64)
-          - arch_prefix: powerpc64
+          - runimage_arch_suffix: powerpc64
             img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
 
@@ -205,7 +205,7 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest
 
-      - name: Build runimage
+      - name: Build images_build_final image
         shell: bash
         run: |
           rm -rf .br2-tree
@@ -219,14 +219,18 @@ jobs:
           mkdir -p .br2-tree/build_customizations
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/virtio_9p_mnt/ .br2-tree/build_customizations/
           docker build . \
-            --tag images_build_002 \
+            --tag images_build_final \
             --file resources/docker/buildroot_makebuild.Dockerfile \
             --build-arg baseimage=images_build_001
+
+      - name: Build runimage
+        shell: bash
+        run: |
           docker build . \
             --tag runimage \
             --file resources/docker/runimage.Dockerfile \
-            --build-arg buildimage=images_build_002 \
-            --build-arg arch=${{ matrix.arch_prefix }}
+            --build-arg buildimage=images_build_final \
+            --build-arg arch=${{ matrix.runimage_arch_suffix }}
 
       - name: Push to GitHub Packages
         run: |
@@ -243,7 +247,7 @@ jobs:
           docker run \
             --rm \
             -v ${PWD}/.dockersrv:/srv \
-            images_with_sshserver_build \
+            images_build_final \
             bash -c "cp -R /root/buildroot/output/images/ /srv/output/images/"
 
       - name: Upload images as artifacts

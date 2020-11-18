@@ -1,7 +1,3 @@
-#
-# Post-build script for buildroot
-#
-
 TARGET_ROOT_FS=$1
 
 if ! grep -q "hostmnt9p" "${TARGET_ROOT_FS}/etc/fstab"; then
