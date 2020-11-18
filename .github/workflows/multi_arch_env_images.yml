@@ -111,7 +111,7 @@ jobs:
           ) || true
           (
             docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest &&
-            docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}oolchain:latest buildroot_toolchain
+            docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest buildroot_toolchain
           ) || true
 
       - name: Build toolchain_build image
