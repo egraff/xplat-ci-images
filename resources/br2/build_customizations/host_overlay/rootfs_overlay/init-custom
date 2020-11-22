@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Mount tmpfs in /run/rootfs
+mkdir -m 755 /run/rootfs
+mount -t tmpfs -o size=90%,mode=755,suid,exec tmpfs /run/rootfs
+
+mkdir -m 755 \
+  /run/rootfs/ro \
+  /run/rootfs/rw \
+  /run/rootfs/.workdir \
+  /run/rootfs/hostoverlay \
+  /run/rootfs/union
+
+# Create read-only bind mount of initramfs root fs in /root/rootfs/ro
+mount -o bind / /run/rootfs/ro
+mount -o remount,ro /run/rootfs/ro
+
+# Mount host-rootfs-overlay to /run/rootfs/hostoverlay
+mount -t 9p -o trans=virtio,version=9p2000.L hostrootfsoverlay9p /run/rootfs/hostoverlay
+
+# Use overlayfs to setup union rootfs in /run/rootfs/union, consisting of (from upper layer to lower layer):
+#   - Writable tmpfs in /run/rootfs/rw
+#   - Read-only host-rootfs-overlay in /run/rootfs/hostoverlay
+#   - Read-only initramfs in /run/rootfs/ro
+mount -t overlay \
+  -o lowerdir=/run/rootfs/hostoverlay:/run/rootfs/ro,upperdir=/run/rootfs/rw,workdir=/run/rootfs/.workdir \
+  unionroot \
+  /run/rootfs/union
+
+cd /run/rootfs/union
+exec chroot . /init

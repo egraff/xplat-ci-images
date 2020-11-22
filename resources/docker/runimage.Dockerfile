@@ -12,6 +12,7 @@ COPY resources/runimage/overlay/ /
 COPY resources/runimage/qemu_run_scripts/qemu_run_${arch}.sh /etc/service/qemu/run
 
 RUN chmod 700 /root/.ssh && chmod 644 /root/.ssh/known_hosts && chmod +x /root/run.sh
+RUN mkdir -m 755 /hostoverlay
 
 COPY --from=build /root/buildroot/output/images/ /opt/xplat-ci-images/${arch}/
 

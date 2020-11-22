@@ -211,17 +211,12 @@ jobs:
           rm -rf .br2-tree
           mkdir -p .br2-tree/build_customizations
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/sshserver/ .br2-tree/build_customizations/
-          docker build . \
-            --tag images_build_001 \
-            --file resources/docker/buildroot_makebuild.Dockerfile \
-            --build-arg baseimage=images_build
-          rm -rf .br2-tree
-          mkdir -p .br2-tree/build_customizations
-          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/virtio_9p_mnt/ .br2-tree/build_customizations/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/host_overlay/ .br2-tree/build_customizations/
+          rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/build_customizations/host_mnt/ .br2-tree/build_customizations/
           docker build . \
             --tag images_build_final \
             --file resources/docker/buildroot_makebuild.Dockerfile \
-            --build-arg baseimage=images_build_001
+            --build-arg baseimage=images_build
 
       - name: Build runimage
         shell: bash
