@@ -17,6 +17,23 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Use Docker cache
+        id: docker-cache
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Load images from Docker cache
+        if: steps.docker-cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          [[ -f /tmp/.docker-cache/buildroot.tar ]] && docker load -i /tmp/.docker-cache/buildroot.tar
+          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache_build.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache_build.tar
+          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
+
       - name: Login to GitHub Package Registry
         shell: bash
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
@@ -80,6 +97,13 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
 
+       - name: Update Docker cache
+         shell: bash
+         run: |
+           docker save -o /tmp/.docker-cache/buildroot.tar buildroot
+           docker save -o /tmp/.docker-cache/buildroot_with_dl_cache_build.tar buildroot_with_dl_cache_build
+           docker save -o /tmp/.docker-cache/buildroot_with_dl_cache.tar buildroot_with_dl_cache
+
 
   buildroot_toolchain:
     name: Buildroot toolchain
@@ -95,6 +119,23 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+
+      - name: Use Docker cache
+        id: docker-cache
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Load images from Docker cache
+        if: steps.docker-cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
+          [[ -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ]] && docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar
+          [[ -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ]] && docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar
 
       - name: Login to GitHub Package Registry
         shell: bash
@@ -151,6 +192,12 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest
 
+       - name: Update Docker cache
+         shell: bash
+         run: |
+           docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ${{ matrix.img_arch_prefix }}toolchain_build
+           docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ${{ matrix.img_arch_prefix }}toolchain
+
 
   buildroot_images:
     name: Buildroot images
@@ -167,6 +214,22 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+
+      - name: Use Docker cache
+        id: docker-cache
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      - name: Load images from Docker cache
+        if: steps.docker-cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: |
+          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
+          [[ -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ]] && docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar
 
       - name: Login to GitHub Package Registry
         shell: bash
