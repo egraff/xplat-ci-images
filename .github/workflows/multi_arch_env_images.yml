@@ -197,8 +197,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/.docker-cache
-          docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ${{ matrix.img_arch_prefix }}toolchain_build
-          docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ${{ matrix.img_arch_prefix }}toolchain
+          docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar buildroot_toolchain_build
+          docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar buildroot_toolchain
 
 
   buildroot_images:
