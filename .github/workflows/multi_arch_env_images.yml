@@ -97,7 +97,7 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
 
-       - name: Update Docker cache
+      - name: Update Docker cache
          shell: bash
          run: |
            docker save -o /tmp/.docker-cache/buildroot.tar buildroot
@@ -192,7 +192,7 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest
 
-       - name: Update Docker cache
+      - name: Update Docker cache
          shell: bash
          run: |
            docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ${{ matrix.img_arch_prefix }}toolchain_build
