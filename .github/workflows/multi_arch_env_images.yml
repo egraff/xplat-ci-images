@@ -30,9 +30,9 @@ jobs:
         if: steps.docker-cache.outputs.cache-hit == 'true'
         shell: bash
         run: |
-          [[ -f /tmp/.docker-cache/buildroot.tar ]] && docker load -i /tmp/.docker-cache/buildroot.tar
-          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache_build.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache_build.tar
-          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
+          [[ ! -f /tmp/.docker-cache/buildroot.tar ]] || docker load -i /tmp/.docker-cache/buildroot.tar
+          [[ ! -f /tmp/.docker-cache/buildroot_with_dl_cache_build.tar ]] || docker load -i /tmp/.docker-cache/buildroot_with_dl_cache_build.tar
+          [[ ! -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] || docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
 
       - name: Login to GitHub Package Registry
         shell: bash
@@ -134,9 +134,9 @@ jobs:
         if: steps.docker-cache.outputs.cache-hit == 'true'
         shell: bash
         run: |
-          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
-          [[ -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ]] && docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar
-          [[ -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ]] && docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar
+          [[ ! -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] || docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
+          [[ ! -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ]] || docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar
+          [[ ! -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ]] || docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar
 
       - name: Login to GitHub Package Registry
         shell: bash
@@ -230,8 +230,8 @@ jobs:
         if: steps.docker-cache.outputs.cache-hit == 'true'
         shell: bash
         run: |
-          [[ -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] && docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
-          [[ -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ]] && docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar
+          [[ ! -f /tmp/.docker-cache/buildroot_with_dl_cache.tar ]] || docker load -i /tmp/.docker-cache/buildroot_with_dl_cache.tar
+          [[ ! -f /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ]] || docker load -i /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar
 
       - name: Login to GitHub Package Registry
         shell: bash
