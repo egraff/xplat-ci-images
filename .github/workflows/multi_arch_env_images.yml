@@ -100,6 +100,7 @@ jobs:
       - name: Update Docker cache
         shell: bash
         run: |
+          mkdir -p /tmp/.docker-cache
           docker save -o /tmp/.docker-cache/buildroot.tar buildroot
           docker save -o /tmp/.docker-cache/buildroot_with_dl_cache_build.tar buildroot_with_dl_cache_build
           docker save -o /tmp/.docker-cache/buildroot_with_dl_cache.tar buildroot_with_dl_cache
@@ -195,6 +196,7 @@ jobs:
       - name: Update Docker cache
         shell: bash
         run: |
+          mkdir -p /tmp/.docker-cache
           docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain_build.tar ${{ matrix.img_arch_prefix }}toolchain_build
           docker save -o /tmp/.docker-cache/${{ matrix.img_arch_prefix }}toolchain.tar ${{ matrix.img_arch_prefix }}toolchain
 
