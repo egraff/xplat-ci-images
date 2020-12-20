@@ -14,17 +14,13 @@ BR2_INSTALL_LIBSTDCPP=y
 # Kernel
 BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_USE_CUSTOM_CONFIG=y
-BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/linux-4.19.config"
+BR2_LINUX_KERNEL_CUSTOM_CONFIG_FILE="$(BR2_EXTERNAL_egraff_xplat_ci_images_buildroot_PATH)/linux-5.4.config"
 
-# Newer 4.19 kernel with fix for CRNG bug
-# See https://unix.stackexchange.com/questions/442698/when-i-log-in-it-hangs-until-crng-init-done
-# and https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=897572
-# and https://security-tracker.debian.org/tracker/CVE-2018-1108
 BR2_LINUX_KERNEL_CUSTOM_VERSION=y
-BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="4.19.152"
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="5.4.58"
 
-# Linux headers same as kernel, a 4.19 series
-BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_4_19=y
+# Linux headers same as kernel, a 5.4 series
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_5_4=y
 
 
 ###################
