@@ -93,6 +93,11 @@ jobs:
             br2_config_file: ppc64_pseries
             linux_defconfig_file: powerpc64_pseries_defconfig
 
+          # 32-bit PowerPC big-endian (ppc)
+          - img_arch_prefix: ppc_g3beige_
+            br2_config_file: ppc_g3beige
+            linux_defconfig_file: powerpc_g3beige_defconfig
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -164,6 +169,11 @@ jobs:
           - runimage_arch_suffix: powerpc64
             img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
+
+          # 32-bit PowerPC big-endian (ppc)
+          - runimage_arch_suffix: powerpc
+            img_arch_prefix: ppc_g3beige_
+            br2_config_file: ppc_g3beige
 
     steps:
       - name: Check out code
