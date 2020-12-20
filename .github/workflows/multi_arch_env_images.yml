@@ -91,6 +91,7 @@ jobs:
           # 64-bit PowerPC big-endian (ppc64)
           - img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
+            linux_defconfig_file: powerpc64_pseries_defconfig
 
     steps:
       - name: Check out code
@@ -120,7 +121,7 @@ jobs:
           rm -rf .br2-tree
           mkdir -p .br2-tree/configs
           rsync --archive --ignore-times --exclude '*~' --exclude '.git*' resources/br2/trees/default/ .br2-tree/
-          cp resources/linux_configs/powerpc64_pseries_defconfig .br2-tree/linux-5.4.config
+          cp resources/linux_configs/${{ matrix.linux_defconfig_file }} .br2-tree/linux-5.4.config
           (cd resources/br2/configs/toolchains && cat include/common_header ${{ matrix.br2_config_file }}) > .br2-tree/configs/config_defconfig
           docker build . \
             --tag buildroot_toolchain_build \
