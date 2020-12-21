@@ -115,10 +115,6 @@ jobs:
             docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest &&
             docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest buildroot_toolchain_build
           ) || true
-          (
-            docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest &&
-            docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest buildroot_toolchain
-          ) || true
 
       - name: Build toolchain_build image
         shell: bash
@@ -135,16 +131,6 @@ jobs:
             --build-arg make_target=toolchain \
             --cache-from buildroot_toolchain_build
 
-      - name: Build toolchain image
-        shell: bash
-        run: |
-          docker build . \
-            --tag buildroot_toolchain \
-            --file resources/docker/buildroot_toolchain.Dockerfile \
-            --build-arg buildimage=buildroot_toolchain_build \
-            --build-arg baseimage=buildroot \
-            --cache-from buildroot_toolchain
-
       - name: Push to GitHub Packages
         shell: bash
         run: |
@@ -154,8 +140,6 @@ jobs:
           docker tag buildroot_toolchain ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest
-          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:latest
 
 
   buildroot_images:
@@ -185,10 +169,8 @@ jobs:
 
       - name: Pull images from GitHub Package Registry
         run: |
-          docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
-          docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
-          docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA
-          docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain:$GITHUB_SHA buildroot_toolchain
+          docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA
+          docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA buildroot_toolchain_build
           (
             docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest &&
             docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest images_build
@@ -206,7 +188,7 @@ jobs:
           docker build . \
             --tag images_build \
             --file resources/docker/buildroot_makebuild.Dockerfile \
-            --build-arg baseimage=buildroot_toolchain \
+            --build-arg baseimage=buildroot_toolchain_build \
             --cache-from images_build
 
       - name: Push to GitHub Packages
