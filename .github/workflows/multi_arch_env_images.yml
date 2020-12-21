@@ -86,6 +86,7 @@ jobs:
     needs: buildroot_base
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           # 64-bit PowerPC big-endian (ppc64)
@@ -147,6 +148,7 @@ jobs:
     needs: buildroot_toolchain
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           # 64-bit PowerPC big-endian (ppc64)
