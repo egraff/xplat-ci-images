@@ -156,7 +156,7 @@ jobs:
       - name: Upload toolchain as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: toolchain
+          name: ${{ matrix.toolchain_arch_name }}_toolchain
           path: |
             .dockersrv/output/toolchain_${{ matrix.toolchain_arch_name }}.tar.gz
 
@@ -265,7 +265,7 @@ jobs:
       - name: Upload images as artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: images
+          name: ${{ matrix.runimage_arch_name }}_images
           path: |
             .dockersrv/output/images/vmlinux
             .dockersrv/output/images/rootfs.cpio.lz4
