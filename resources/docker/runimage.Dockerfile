@@ -5,6 +5,10 @@ FROM phusion/baseimage:bionic-1.0.0
 
 ARG arch
 
+RUN \
+  apt-get update && \
+  apt-get install -y qemu-system
+
 WORKDIR /root/
 CMD ["/sbin/my_init"]
 
@@ -17,7 +21,5 @@ RUN mkdir -m 755 /hostoverlay
 COPY --from=build /root/buildroot/output/images/ /opt/xplat-ci-images/${arch}/
 
 RUN \
-  apt-get update && \
-  apt-get install -y qemu-system && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
