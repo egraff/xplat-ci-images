@@ -90,12 +90,14 @@ jobs:
       matrix:
         include:
           # 64-bit PowerPC big-endian (ppc64)
-          - img_arch_prefix: ppc64_pseries_
+          - toolchain_arch_name: powerpc64
+            img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
             linux_defconfig_file: powerpc64_pseries_defconfig
 
           # 32-bit PowerPC big-endian (ppc)
-          - img_arch_prefix: ppc_g3beige_
+          - toolchain_arch_name: powerpc
+            img_arch_prefix: ppc_g3beige_
             br2_config_file: ppc_g3beige
             linux_defconfig_file: powerpc_g3beige_defconfig
 
@@ -140,6 +142,24 @@ jobs:
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest
 
+      - name: Copy toolchain to output folder
+        shell: bash
+        run: |
+          rm -rf .dockersrv
+          mkdir -p .dockersrv/output
+          docker run \
+            --rm \
+            -v ${PWD}/.dockersrv:/srv \
+            buildroot_toolchain_build \
+            bash -c "tar -czf /srv/output/toolchain_${{ matrix.toolchain_arch_name }}.tar.gz -C /root/buildroot/output/host/ ."
+
+      - name: Upload toolchain as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: toolchain
+          path: |
+            .dockersrv/output/toolchain_${{ matrix.toolchain_arch_name }}.tar.gz
+
 
   buildroot_images:
     name: Buildroot images
@@ -150,12 +170,12 @@ jobs:
       matrix:
         include:
           # 64-bit PowerPC big-endian (ppc64)
-          - runimage_arch_suffix: powerpc64
+          - runimage_arch_name: powerpc64
             img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
 
           # 32-bit PowerPC big-endian (ppc)
-          - runimage_arch_suffix: powerpc
+          - runimage_arch_name: powerpc
             img_arch_prefix: ppc_g3beige_
             br2_config_file: ppc_g3beige
 
@@ -218,14 +238,18 @@ jobs:
             --tag runimage \
             --file resources/docker/runimage.Dockerfile \
             --build-arg buildimage=images_build_final \
-            --build-arg arch=${{ matrix.runimage_arch_suffix }}
+            --build-arg arch=${{ matrix.runimage_arch_name }}
 
       - name: Push to GitHub Packages
         run: |
           docker tag runimage ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:$GITHUB_SHA
           docker tag runimage ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:latest
+          docker tag runimage ${{ env.GH_PKG_PREFIX }}runimage_${{ matrix.runimage_arch_name }}:$GITHUB_SHA
+          docker tag runimage ${{ env.GH_PKG_PREFIX }}runimage_${{ matrix.runimage_arch_name }}:latest
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:$GITHUB_SHA
           docker push ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}runimage:latest
+          docker push ${{ env.GH_PKG_PREFIX }}runimage_${{ matrix.runimage_arch_name }}:$GITHUB_SHA
+          docker push ${{ env.GH_PKG_PREFIX }}runimage_${{ matrix.runimage_arch_name }}:latest
 
       - name: Copy images to output folder
         shell: bash
