@@ -7,7 +7,7 @@ ARG arch
 
 RUN \
   apt-get update && \
-  apt-get install -y qemu-system
+  apt-get install -y qemu-system openbios-ppc openbios-sparc
 
 WORKDIR /root/
 CMD ["/sbin/my_init"]
