@@ -119,6 +119,11 @@ jobs:
             docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest buildroot_toolchain_build
           ) || true
 
+      - name: Check disk usage
+        run: |
+          docker system df
+          df -h
+
       - name: Build toolchain_build image
         shell: bash
         run: |
@@ -133,6 +138,11 @@ jobs:
             --build-arg baseimage=buildroot \
             --build-arg make_target=toolchain \
             --cache-from buildroot_toolchain_build
+
+      - name: Check disk usage
+        run: |
+          docker system df
+          df -h
 
       - name: Push to GitHub Packages
         shell: bash
@@ -196,6 +206,11 @@ jobs:
             docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest images_build
           ) || true
 
+      - name: Check disk usage
+        run: |
+          docker system df
+          df -h
+
       - name: Build images_build image
         shell: bash
         run: |
@@ -210,6 +225,11 @@ jobs:
             --file resources/docker/buildroot_makebuild.Dockerfile \
             --build-arg baseimage=buildroot_toolchain_build \
             --cache-from images_build
+
+      - name: Check disk usage
+        run: |
+          docker system df
+          df -h
 
       - name: Push to GitHub Packages
         run: |
