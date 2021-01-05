@@ -3,6 +3,11 @@ name: Multi-architecture environment images
 
 on:
   workflow_dispatch:
+    inputs:
+      no_docker_cache:
+        description: 'Set this to a non-empty string to disable docker caching'
+        required: false
+        default: ''
 
 
 env:
@@ -10,80 +15,8 @@ env:
 
 
 jobs:
-  buildroot_base:
-    name: Buildroot base
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-
-      - name: Login to GitHub Package Registry
-        shell: bash
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-      - name: Pull images from GitHub Package Registry
-        shell: bash
-        run: |
-          (
-            docker pull ${{ env.GH_PKG_PREFIX }}buildroot:latest &&
-            docker tag  ${{ env.GH_PKG_PREFIX }}buildroot:latest buildroot
-          ) || true
-          (
-            docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest &&
-            docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest buildroot_with_dl_cache_build
-          ) || true
-          (
-            docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest &&
-            docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot_with_dl_cache
-          ) || true
-
-      - name: Build buildroot base image
-        shell: bash
-        run: |
-          docker build . \
-            --tag buildroot \
-            --file resources/docker/buildroot.Dockerfile \
-            --cache-from buildroot
-
-      - name: Build buildroot_with_dl_cache_build image
-        shell: bash
-        run: |
-          docker build . \
-            --tag buildroot_with_dl_cache_build \
-            --file resources/docker/buildroot_with_dl_cache_build.Dockerfile \
-            --build-arg baseimage=buildroot \
-            --cache-from buildroot_with_dl_cache_build
-
-      - name: Build buildroot_with_dl_cache image
-        shell: bash
-        run: |
-          docker build . \
-            --tag buildroot_with_dl_cache \
-            --file resources/docker/buildroot_with_dl_cache.Dockerfile \
-            --build-arg buildimage=buildroot_with_dl_cache_build \
-            --build-arg baseimage=buildroot \
-            --cache-from buildroot_with_dl_cache
-
-      - name: Push to GitHub Packages
-        shell: bash
-        run: |
-          docker tag buildroot ${{ env.GH_PKG_PREFIX }}buildroot:$GITHUB_SHA
-          docker tag buildroot ${{ env.GH_PKG_PREFIX }}buildroot:latest
-          docker tag buildroot_with_dl_cache_build ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:$GITHUB_SHA
-          docker tag buildroot_with_dl_cache_build ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest
-          docker tag buildroot_with_dl_cache ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
-          docker tag buildroot_with_dl_cache ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
-          docker push ${{ env.GH_PKG_PREFIX }}buildroot:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}buildroot:latest
-          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache_build:latest
-          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:$GITHUB_SHA
-          docker push ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
-
-
   buildroot_toolchain:
     name: Buildroot toolchain
-    needs: buildroot_base
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -109,11 +42,16 @@ jobs:
         shell: bash
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
-      - name: Pull images from GitHub Package Registry
+      - name: Pull dependency images from GitHub Package Registry
         shell: bash
         run: |
           docker pull ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest
           docker tag  ${{ env.GH_PKG_PREFIX }}buildroot_with_dl_cache:latest buildroot
+
+      - name: Pull cache images from GitHub Package Registry
+        if: ${{ github.event.inputs.no_docker_cache == '' }}
+        shell: bash
+        run: |
           (
             docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest &&
             docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:latest buildroot_toolchain_build
@@ -197,10 +135,16 @@ jobs:
         shell: bash
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
-      - name: Pull images from GitHub Package Registry
+      - name: Pull dependency images from GitHub Package Registry
+        shell: bash
         run: |
           docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA
           docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}toolchain_build:$GITHUB_SHA buildroot_toolchain_build
+
+      - name: Pull cache images from GitHub Package Registry
+        if: ${{ github.event.inputs.no_docker_cache == '' }}
+        shell: bash
+        run: |
           (
             docker pull ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest &&
             docker tag  ${{ env.GH_PKG_PREFIX }}${{ matrix.img_arch_prefix }}images_build:latest images_build
