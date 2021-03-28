@@ -34,6 +34,12 @@ jobs:
             br2_config_file: ppc_g3beige
             linux_defconfig_file: powerpc_g3beige_defconfig
 
+          # x86_64
+          - toolchain_arch_name: x64
+            img_arch_prefix: x86_64_
+            br2_config_file: x86_64
+            linux_defconfig_file: x86_64_defconfig
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
