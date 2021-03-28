@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
-      - name: Pull images from GitHub Package Registry
+      - name: Pull cache images from GitHub Package Registry
         shell: bash
         run: |
           (
