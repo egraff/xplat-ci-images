@@ -133,6 +133,11 @@ jobs:
             img_arch_prefix: ppc_g3beige_
             br2_config_file: ppc_g3beige
 
+          # x86_64
+          - runimage_arch_name: x64
+            img_arch_prefix: x86_64_
+            br2_config_file: x86_64
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
