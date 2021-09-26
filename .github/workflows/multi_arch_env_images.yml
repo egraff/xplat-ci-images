@@ -127,16 +127,22 @@ jobs:
           - runimage_arch_name: powerpc64
             img_arch_prefix: ppc64_pseries_
             br2_config_file: ppc64_pseries
+            linux_image_name: vmlinux
+            rootfs_name: rootfs.cpio.lz4
 
           # 32-bit PowerPC big-endian (ppc)
           - runimage_arch_name: powerpc
             img_arch_prefix: ppc_g3beige_
             br2_config_file: ppc_g3beige
+            linux_image_name: vmlinux
+            rootfs_name: rootfs.cpio.lz4
 
           # x86_64
           - runimage_arch_name: x64
             img_arch_prefix: x86_64_
             br2_config_file: x86_64
+            linux_image_name: bzImage
+            rootfs_name: rootfs.cpio.lz4
 
     steps:
       - name: Check out code
@@ -242,5 +248,5 @@ jobs:
         with:
           name: ${{ matrix.runimage_arch_name }}_images
           path: |
-            .dockersrv/output/images/vmlinux
-            .dockersrv/output/images/rootfs.cpio.lz4
+            .dockersrv/output/images/${{ matrix.linux_image_name }}
+            .dockersrv/output/images/${{ matrix.rootfs_name }}
