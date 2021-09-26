@@ -11,6 +11,12 @@ on:
   release:
     types:
       - created
+  workflow_dispatch:
+    inputs:
+      no_docker_cache:
+        description: 'Set this to a non-empty string to disable docker caching'
+        required: false
+        default: ''
 
 
 env:
@@ -30,6 +36,7 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login https://docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
       - name: Pull cache images from GitHub Package Registry
+        if: ${{ github.event.inputs.no_docker_cache == '' }}
         shell: bash
         run: |
           (
