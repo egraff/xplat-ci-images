@@ -5,8 +5,8 @@ exec qemu-system-x86_64 \
   -m 1024 \
   -vnc :0 \
   -no-reboot \
-  -kernel /opt/xplat-ci-images/powerpc/vmlinux \
-  -initrd /opt/xplat-ci-images/powerpc/rootfs.cpio.lz4 \
+  -kernel /opt/xplat-ci-images/x64/bzImage \
+  -initrd /opt/xplat-ci-images/x64/rootfs.cpio.lz4 \
   -append "console=ttyS0 rootwait ro modules_load=9pnet_virtio,9p rdinit=/init-custom" \
   -net user,hostfwd=tcp::10022-:22 \
   -net nic,model=virtio \
