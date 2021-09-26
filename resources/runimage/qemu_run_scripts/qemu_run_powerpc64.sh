@@ -10,7 +10,7 @@ exec qemu-system-ppc64 \
   -initrd /opt/xplat-ci-images/powerpc64/rootfs.cpio.lz4 \
   -append "console=hvc0 rootwait ro modules_load=9pnet_virtio,9p rdinit=/init-custom" \
   -net user,hostfwd=tcp::10022-:22 \
-  -net nic \
+  -net nic,model=virtio \
   -serial tcp:127.0.0.1:4321,server,nowait \
   -device virtio-rng-pci \
   -virtfs local,path=/hostoverlay,security_model=mapped,mount_tag=hostrootfsoverlay9p \
