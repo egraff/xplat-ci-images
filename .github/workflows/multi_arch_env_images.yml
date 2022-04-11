@@ -108,7 +108,7 @@ jobs:
             bash -c "tar -czf /srv/output/toolchain_${{ matrix.toolchain_arch_name }}.tar.gz -C /root/buildroot/output/host/ ."
 
       - name: Upload toolchain as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.toolchain_arch_name }}_toolchain
           path: |
@@ -244,7 +244,7 @@ jobs:
             bash -c "cp -R /root/buildroot/output/images/ /srv/output/images/"
 
       - name: Upload images as artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.runimage_arch_name }}_images
           path: |
